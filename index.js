@@ -19,7 +19,23 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run(){
     try{
-        const toyotaCollection=client.db('shopify').collection('toyota')
+        const categoryCollection=client.db('shopify').collection('category')
+        const itemsCollection= client.db('shopify').collection('categoryItems')
+
+        app.get('/category', async(req, res)=>{
+            const query={}
+            const result=await categoryCollection.find(query).toArray()
+            res.send(result)
+        });
+
+        app.get('/categoryitems', async(req, res)=>{
+            const categoryName=req.query.categoryName;
+            const query={categoryName: categoryName}
+            const result= await itemsCollection.find(query).toArray()
+            res.send(result)
+        })
+
+
 
     }
     catch{
