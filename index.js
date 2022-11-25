@@ -21,6 +21,10 @@ async function run(){
     try{
         const categoryCollection=client.db('shopify').collection('category')
         const itemsCollection= client.db('shopify').collection('categoryItems')
+        const usersCollection =client.db('shopify').collection('users')
+        const bookingCollection=client.db('shopify').collection('booking')
+
+        // category area 
 
         app.get('/category', async(req, res)=>{
             const query={}
@@ -40,7 +44,23 @@ async function run(){
              res.send(result);
         })
 
+        // users area 
 
+        app.post('/users', async(req, res)=>{
+            const usersData=req.body
+            const result= await usersCollection.insertOne(usersData)
+            res.send(result)
+        });
+
+
+
+        // booking area 
+
+        app.post('/booking', async(req , res)=>{
+            const bookingData=req.body;
+            const result=await bookingCollection.insertOne(bookingData);
+            res.send(result)
+        })
 
     }
     catch{
