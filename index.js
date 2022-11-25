@@ -33,6 +33,11 @@ async function run(){
             const query={categoryName: categoryName}
             const result= await itemsCollection.find(query).toArray()
             res.send(result)
+        });
+        app.post('/categoryitems', async(req, res)=>{
+            const productData=req.body;
+            const result= await itemsCollection.insertOne(productData);
+             res.send(result);
         })
 
 
