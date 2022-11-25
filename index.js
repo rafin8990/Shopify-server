@@ -1,5 +1,6 @@
 const express = require('express');
 const cors= require('cors')
+const jwt=require('jsonwebtoken')
 const app = express();
 require('dotenv').config()
 
@@ -16,6 +17,22 @@ app.get('/', (req, res)=>{
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.nuouh7o.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+function verifyJWT(req, res, next) {
+    const authHeaders = req.headers.authorization;
+    // console.log(authHeaders)
+    if (!authHeaders) {
+        return res.status(401).send({ message: 'unauthorized access' });
+    }
+
+    const token = authHeaders.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (error, decoded) {
+        if (error) {
+            return res.status(403).send({ message: 'forbidden access' })
+        }
+        req.decoded = decoded;
+        next()
+    })
+}
 
 async function run(){
     try{
@@ -23,6 +40,20 @@ async function run(){
         const itemsCollection= client.db('shopify').collection('categoryItems')
         const usersCollection =client.db('shopify').collection('users')
         const bookingCollection=client.db('shopify').collection('booking')
+
+
+        // implement jsonwebtoken 
+
+        app.get('/jwt', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const user = await usersCollection.findOne(query);
+            if (user) {
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '3d' })
+                return res.send({ accessToken: token });
+            }
+            res.status(403).send({ accessToken: '' })
+        });
 
         // category area 
 
@@ -52,9 +83,29 @@ async function run(){
             res.send(result)
         });
 
+        app.get('/users', async(req, res)=>{
+            const role=req.query.role;
+            const query={role: role};
+            const sellerUser= await usersCollection.find(query).toArray();
+            res.send(sellerUser)
+        })
+
 
 
         // booking area 
+
+        app.get('/booking',verifyJWT, async(req, res)=>{
+            const email=req.query.email
+
+            const decodedEmail=req.decoded.email
+
+            if(email !== decodedEmail){
+                return res.status(403).send({message:'forbidden access'})
+            }
+            const query={email: email};
+            const result=await bookingCollection.find(query).toArray()
+            res.send(result)
+        })
 
         app.post('/booking', async(req , res)=>{
             const bookingData=req.body;
