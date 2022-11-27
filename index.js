@@ -76,24 +76,24 @@ async function run() {
             });
         })
 
-        app.post('/payment', async (req, res)=>{
-            const payment=req.body;
-            const result=await paymentCollection.insertOne(payment)
-            const id=payment.productId;
-            const filter={_id:ObjectId(id)}
-            const updatedDoc={
-                $set:{
-                    paid:true,
-                    transactionId:payment.transectionId
+        app.post('/payment', async (req, res) => {
+            const payment = req.body;
+            const result = await paymentCollection.insertOne(payment)
+            const id = payment.productId;
+            const filter = { _id: ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transectionId
                 }
             }
-            const updateBookingProduct=await bookingCollection.updateOne(filter, updatedDoc);
-            const categoryId=payment.categoryItemId
-            const categoryFilter={_id: ObjectId(categoryId)}
+            const updateBookingProduct = await bookingCollection.updateOne(filter, updatedDoc);
+            const categoryId = payment.categoryItemId
+            const categoryFilter = { _id: ObjectId(categoryId) }
 
-            const updateCategoryItems=await itemsCollection.updateOne(categoryFilter, updatedDoc)
+            const updateCategoryItems = await itemsCollection.updateOne(categoryFilter, updatedDoc)
 
-            
+
             res.send(result)
         })
 
@@ -184,6 +184,30 @@ async function run() {
 
             const result = await bookingCollection.findOne(query);
             res.send(result)
+        });
+
+        // wishlist
+
+        app.put('/categoryitem/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const wishlistData = req.body
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    wishlistData:wishlistData
+                }
+            }
+
+            const updateForWishlist = await itemsCollection.updateOne(query, updatedDoc, options)
+            res.send(updateForWishlist)
+        });
+
+        app.get('/categoryitem', async (req, res) => {
+            const wishlishData = req.query.wishlistData;
+            const query = { wishlishData: wishlishData };
+            const wishlist = await itemsCollection.find(query).toArray()
+            res.send(wishlist)
         })
 
     }
