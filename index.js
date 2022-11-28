@@ -51,7 +51,7 @@ async function run() {
             const query = { email: email }
             const user = await usersCollection.findOne(query);
             if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '3d' })
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '7d' })
                 return res.send({ accessToken: token });
             }
             res.status(403).send({ accessToken: '' })
@@ -195,7 +195,7 @@ async function run() {
 
         // wishlist
 
-        app.put('/categoryitem/:id', async (req, res) => {
+        app.patch('/categoryitem/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const wishlistData = req.body
@@ -211,7 +211,7 @@ async function run() {
         });
         app.get('/categoryitem', async (req, res) => {
             const wishlistData = req.query.wishlistData;
-            const query = { wishlishData: wishlistData };
+            const query = { wishlistData: wishlistData };
             const wishlist = await itemsCollection.find(query).toArray()
             res.send(wishlist)
         });
