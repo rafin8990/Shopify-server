@@ -153,6 +153,13 @@ async function run() {
 
             const user = await usersCollection.findOne(query);
             res.send({ isAdmin: user?.role === 'Seller' });
+        });
+
+        app.delete('/users/:id', async (req, res)=>{
+            const id=req.params.id;
+            const query={_id: ObjectId(id)};
+            const result= await usersCollection.deleteOne(query);
+            res.send(result)
         })
 
 
@@ -195,20 +202,38 @@ async function run() {
             const options = { upsert: true };
             const updatedDoc = {
                 $set: {
-                    wishlistData:wishlistData
+                    wishlistData: wishlistData
                 }
             }
 
             const updateForWishlist = await itemsCollection.updateOne(query, updatedDoc, options)
             res.send(updateForWishlist)
         });
-
         app.get('/categoryitem', async (req, res) => {
-            const wishlishData = req.query.wishlistData;
-            const query = { wishlishData: wishlishData };
+            const wishlistData = req.query.wishlistData;
+            const query = { wishlishData: wishlistData };
             const wishlist = await itemsCollection.find(query).toArray()
             res.send(wishlist)
+        });
+
+        app.put('/advertise/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const number = req.body
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    number:number,
+                    advertise: true,
+                    number:8990
+                }
+            }
+
+            const updateForAdvertise = await itemsCollection.updateOne(query, updatedDoc, options);
+            res.send(updateForAdvertise)
+
         })
+
 
     }
     catch {
